@@ -1,22 +1,15 @@
 //! Integration tests for renderer-drawn annotations: colorbar with tick labels, title text,
 //! and 3D orientation axes triad (`M1.5`).
 
-use std::path::PathBuf;
+mod common;
 
+use common::{shared_headless_context, workspace_root};
 use tetraglass_filters::extract_external_surface;
 use tetraglass_io::read_vtu_from_path;
 use tetraglass_render::{
     Annotations, Camera, ColorBy, ColorbarAnnotation, ColorbarPlacement, ColormapKind,
-    HeadlessContext, HeadlessRenderOptions, SurfaceStyle,
+    HeadlessRenderOptions, SurfaceStyle,
 };
-
-fn workspace_root() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .and_then(|p| p.parent())
-        .expect("workspace root")
-        .to_path_buf()
-}
 
 #[test]
 fn render_annotations_draws_title_colorbar_and_axes_triad() {
@@ -27,7 +20,7 @@ fn render_annotations_draws_title_colorbar_and_axes_triad() {
     let bounds = surface.bounds().expect("surface bounds");
     let camera = Camera::fit_bounds(bounds, 30.0, 20.0);
 
-    let ctx = HeadlessContext::new().expect("headless context");
+    let ctx = shared_headless_context();
     let style = SurfaceStyle {
         color_by: ColorBy::point("linear"),
         colormap: ColormapKind::Viridis,
@@ -169,7 +162,7 @@ fn render_annotations_supports_all_colorbar_positions_and_dark_background() {
     let grid = read_vtu_from_path(&vtu_path).expect("load mixed_linear.vtu");
     let surface = extract_external_surface(&grid).expect("extract surface");
 
-    let ctx = HeadlessContext::new().expect("headless context");
+    let ctx = shared_headless_context();
     for placement in [
         ColorbarPlacement::Left,
         ColorbarPlacement::Bottom,

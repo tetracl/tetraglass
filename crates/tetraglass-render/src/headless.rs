@@ -267,6 +267,12 @@ impl HeadlessContext {
     /// Respects standard `wgpu` environment variables (`WGPU_BACKEND`, `WGPU_ADAPTER_NAME`)
     /// as well as `TETRAGLASS_FORCE_FALLBACK_ADAPTER=1` to explicitly select software adapters
     /// such as Mesa `lavapipe`.
+    ///
+    /// In multi-threaded processes (such as parallel test binaries), prefer sharing a single
+    /// `HeadlessContext` across threads rather than creating separate contexts concurrently:
+    /// on Linux Vulkan (`libvulkan`), concurrent adapter enumeration (`vkEnumeratePhysicalDevices`)
+    /// and debug object naming (`vkSetDebugUtilsObjectNameEXT`) on another device can race inside
+    /// the Vulkan loader.
     pub fn new() -> Result<Self, RenderError> {
         let instance =
             wgpu::Instance::new(wgpu::InstanceDescriptor::new_without_display_handle_from_env());
