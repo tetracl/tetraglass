@@ -306,7 +306,7 @@ Each gate is a demo you can show, not a feature count. The agent loop comes befo
 Set up the community scaffolding in M0, while it is cheap; retrofitting tests and docs onto a grown codebase costs far more evenings.
 
 - **License:** MIT OR Apache-2.0, the Rust ecosystem default. Any code ported from VTK keeps VTK's BSD-3 notice in the files it came from.
-- **Name:** Tetraglass, hosted at github.com/Tetraglass/tetraglass. All planned crate names were free on 2026-10-22; reserve them on crates.io before the first public commit.
+- **Name:** Tetraglass, hosted at github.com/tetracl/tetraglass (ADR-0001). All planned crate names were free on 2026-10-22; reserve them on crates.io before the first public commit.
 - **Tests:** unit tests per filter, VTK reference outputs for a few public datasets, and image regression tests with a tolerance. CI renders on a software Vulkan driver (Mesa lavapipe), so render tests need no GPU.
 - **CI:** fmt, clippy, tests, a WASM build of the viewer, and a render of every gallery scene on each pull request.
 - **Docs:** API docs on docs.rs plus an mdBook guide. Its gallery is a folder of scene files rendered in CI, so every gallery image is also a test and an agent example.
@@ -329,7 +329,7 @@ The biggest risk is scope against evenings-and-weekends time; every other risk i
 
 **Open questions:**
 
-- [x] Project name and crate namespace: Tetraglass, with crates named `tetraglass-*` and the repository at github.com/Tetraglass/tetraglass.
+- [x] Project name and crate namespace: Tetraglass, with crates named `tetraglass-*` and the repository at github.com/tetracl/tetraglass (ADR-0001).
 - [x] Reuse vtkio and mshio, or write focused readers? Write focused in-house readers in `tetraglass-io` (D-018).
 - [ ] Which public FEM/CFD datasets become the reference test set, and under what licenses?
 - [x] Which Blender versions to support, and do the GPL-licensed Blender scripts live in a separate folder or their own repository? Blender 4.2 LTS and 5.x LTS; `blender/` stays in this repository under GPL-3.0-or-later (D-020).

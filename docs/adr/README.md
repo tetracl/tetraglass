@@ -8,3 +8,4 @@ and stay binding unless an ADR here supersedes one by name.
 
 | ADR | Title | Status | Design sections changed |
 | --- | --- | --- | --- |
+| [0001](0001-repository-location.md) | The repository is github.com/tetracl/tetraglass | Accepted | 12, 13 |

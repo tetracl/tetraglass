@@ -14,7 +14,7 @@ bl_info = {
     "location": "File > Import > Tetraglass Bundle (manifest.json)",
     "description": "Import Tetraglass FEM/CFD visualization bundles (manifest.json + .tgbin)",
     "category": "Import-Export",
-    "doc_url": "https://github.com/Tetraglass/tetraglass",
+    "doc_url": "https://github.com/tetracl/tetraglass",
     "license": "GPL-3.0-or-later",
 }
 
