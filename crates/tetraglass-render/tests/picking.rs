@@ -1,22 +1,18 @@
 //! Integration tests for GPU ID buffer picking and CPU value probing (`M2.7`).
+//!
+//! Use [`common::shared_headless_context`] rather than calling `HeadlessContext::new()` per test
+//! to avoid concurrent `libvulkan.so.1` loader races under parallel test execution (#5).
 
-use std::path::PathBuf;
+mod common;
 
+use common::{shared_headless_context, workspace_root};
 use tetraglass_filters::{SliceParams, extract_external_surface, linearize, slice};
 use tetraglass_io::read_vtu_from_path;
 use tetraglass_render::{
-    Camera, ColorBy, DEFAULT_COLOR_FORMAT, FieldAssociation, HeadlessContext,
-    HeadlessRenderOptions, OffscreenTarget, PickTarget, Renderer, ShaderClipKeep, ShaderClipPlane,
-    SurfaceStyle, probe_surface_triangle,
+    Camera, ColorBy, DEFAULT_COLOR_FORMAT, FieldAssociation, HeadlessRenderOptions,
+    OffscreenTarget, PickTarget, Renderer, ShaderClipKeep, ShaderClipPlane, SurfaceStyle,
+    probe_surface_triangle,
 };
-
-fn workspace_root() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .and_then(|p| p.parent())
-        .expect("workspace root")
-        .to_path_buf()
-}
 
 #[test]
 fn gpu_pick_returns_miss_on_background_and_exact_analytic_values_on_mesh() {
@@ -25,7 +21,7 @@ fn gpu_pick_returns_miss_on_background_and_exact_analytic_values_on_mesh() {
         read_vtu_from_path(root.join("testdata/vtk/mixed_linear.vtu")).expect("load mixed_linear");
     let surface = extract_external_surface(&grid).expect("extract surface");
 
-    let headless = HeadlessContext::new().expect("headless wgpu context");
+    let headless = shared_headless_context();
     let options = HeadlessRenderOptions {
         width: 400,
         height: 300,
@@ -115,7 +111,7 @@ fn multi_representation_pick_identifies_representation_and_skips_wireframe() {
     let tet_view = linearize(&hex, &Default::default()).expect("linearize hex");
     let cut = slice(&tet_view, &SliceParams::new([0.0, 0.0, 1.0])).expect("slice hex");
 
-    let headless = HeadlessContext::new().expect("headless wgpu context");
+    let headless = shared_headless_context();
     let renderer = Renderer::new(headless.device(), headless.queue(), DEFAULT_COLOR_FORMAT, 4)
         .expect("create renderer");
     let pick_target = PickTarget::new(headless.device(), 400, 300).expect("create pick target");
@@ -183,7 +179,7 @@ fn shader_clip_plane_clips_color_and_pick_passes_and_restores_when_cleared() {
     let hex = read_vtu_from_path(root.join("testdata/vtk/hex_linear.vtu")).expect("load hex");
     let hull = extract_external_surface(&hex).expect("extract hull");
 
-    let headless = HeadlessContext::new().expect("headless wgpu context");
+    let headless = shared_headless_context();
     let renderer = Renderer::new(headless.device(), headless.queue(), DEFAULT_COLOR_FORMAT, 4)
         .expect("create renderer");
     let color_target =
@@ -338,7 +334,7 @@ fn picking_points_representation_probes_vertex_and_scalar_values_and_supports_po
     let bounds = surface.bounds().expect("surface bounds");
     let camera = Camera::fit_bounds(bounds, 30.0, 20.0);
 
-    let headless = HeadlessContext::new().expect("headless wgpu context");
+    let headless = shared_headless_context();
     let style = SurfaceStyle {
         color_by: ColorBy::point("linear"),
         draw_surface: false,

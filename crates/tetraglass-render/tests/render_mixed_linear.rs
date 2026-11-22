@@ -1,21 +1,19 @@
 //! Headless rendering integration tests for `tetraglass-render` (M0.7).
+//!
+//! Use [`common::shared_headless_context`] rather than calling `HeadlessContext::new()` per test
+//! to avoid concurrent `libvulkan.so.1` loader races under parallel test execution (#5).
 
-use std::path::{Path, PathBuf};
+mod common;
 
+use std::path::Path;
+
+use common::{shared_headless_context, workspace_root};
 use tetraglass_filters::extract_external_surface;
 use tetraglass_io::read_vtu_from_path;
 use tetraglass_render::{
-    Camera, ColorBy, ColormapKind, DEFAULT_COLOR_FORMAT, HeadlessContext, HeadlessRenderOptions,
-    OffscreenTarget, RenderedImage, Renderer, SsaoConfig, SurfaceStyle,
+    Camera, ColorBy, ColormapKind, DEFAULT_COLOR_FORMAT, HeadlessRenderOptions, OffscreenTarget,
+    RenderedImage, Renderer, SsaoConfig, SurfaceStyle,
 };
-
-fn workspace_root() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .and_then(|p| p.parent())
-        .expect("workspace root")
-        .to_path_buf()
-}
 
 fn assert_matches_baseline(root: &Path, file_name: &str, image: &RenderedImage) {
     let baseline_path = root.join("tests/baselines").join(file_name);
@@ -54,7 +52,7 @@ fn render_mixed_linear_colored_by_linear_and_cell_id() {
     let bounds = surface.bounds().expect("non-empty surface bounds");
     let camera = Camera::fit_bounds(bounds, 30.0, 20.0);
 
-    let ctx = HeadlessContext::new().expect("create headless wgpu context");
+    let ctx = shared_headless_context();
     let options = HeadlessRenderOptions {
         width: 800,
         height: 600,
@@ -202,7 +200,7 @@ fn render_validates_errors_and_diff_highlighting() {
     let grid = read_vtu_from_path(&vtu_path).expect("load mixed_linear.vtu");
     let surface = extract_external_surface(&grid).expect("extract surface");
 
-    let ctx = HeadlessContext::new().expect("headless context");
+    let ctx = shared_headless_context();
 
     // Zero dimensions must return InvalidDimensions error.
     let bad_target = OffscreenTarget::new(ctx.device(), 0, 100, DEFAULT_COLOR_FORMAT, 4);
@@ -249,7 +247,7 @@ fn render_surface_with_edges_and_wireframe_draws_original_element_edges() {
 
     let bounds = surface.bounds().expect("surface bounds");
     let camera = Camera::fit_bounds(bounds, 35.0, 25.0);
-    let ctx = HeadlessContext::new().expect("headless context");
+    let ctx = shared_headless_context();
 
     let base_opts = HeadlessRenderOptions {
         width: 400,
@@ -346,7 +344,7 @@ fn weighted_blended_oit_is_order_independent_and_composites_over_opaque_geometry
     let bounds = shell_surface.bounds().expect("shell bounds");
     let dataset_center = bounds.center();
     let camera = Camera::fit_bounds(bounds, 35.0, 24.0);
-    let ctx = HeadlessContext::new().expect("headless context");
+    let ctx = shared_headless_context();
 
     for sample_count in [1u32, 4u32] {
         let renderer = Renderer::new(
@@ -584,7 +582,7 @@ fn volume_ray_marching_modulates_transfer_function_and_terminates_at_opaque_dept
     .expect("slice x");
 
     let camera = Camera::fit_bounds(bounds, 35.0, 24.0);
-    let ctx = HeadlessContext::new().expect("headless wgpu context");
+    let ctx = shared_headless_context();
     let bg = [0.08, 0.09, 0.12, 1.0];
 
     for sample_count in [1u32, 4u32] {
@@ -739,7 +737,7 @@ fn ssao_darkens_concave_crevices_and_leaves_background_and_disabled_renders_inta
 
     let bounds = surface.bounds().expect("surface bounds");
     let camera = Camera::fit_bounds(bounds, 35.0, 28.0);
-    let ctx = HeadlessContext::new().expect("headless context");
+    let ctx = shared_headless_context();
 
     for sample_count in [1u32, 4u32] {
         let opts = HeadlessRenderOptions {
@@ -859,7 +857,7 @@ fn compute_path_tracer_accumulates_progressively_and_renders_soft_shadows_and_mu
 
     let bounds = surface.bounds().expect("surface bounds");
     let camera = Camera::fit_bounds(bounds, 35.0, 28.0);
-    let ctx = HeadlessContext::new().expect("headless context");
+    let ctx = shared_headless_context();
 
     let style = SurfaceStyle {
         color_by: ColorBy::point("linear"),
@@ -1027,7 +1025,7 @@ fn points_representation_renders_solid_point_and_cell_colors_scales_with_point_s
     let bounds = surface.bounds().expect("surface bounds");
     let camera = Camera::fit_bounds(bounds, 30.0, 20.0);
 
-    let ctx = HeadlessContext::new().expect("headless wgpu context");
+    let ctx = shared_headless_context();
     let count_non_white = |img: &RenderedImage| -> usize {
         img.as_rgba8()
             .as_chunks::<4>()
@@ -1178,4 +1176,60 @@ fn points_representation_renders_solid_point_and_cell_colors_scales_with_point_s
         count_non_white(&img_wboit) > 400,
         "semi-transparent points must render via WBOIT accumulation pass"
     );
+}
+
+#[test]
+fn shared_headless_context_renders_deterministically_across_threads() {
+    let root = workspace_root();
+    let grid = read_vtu_from_path(root.join("testdata/vtk/mixed_linear.vtu"))
+        .expect("load mixed_linear.vtu");
+    let surface = extract_external_surface(&grid).expect("extract surface");
+    let bounds = surface.bounds().expect("surface bounds");
+    let options = HeadlessRenderOptions {
+        width: 200,
+        height: 150,
+        sample_count: 4,
+        background_srgb: [1.0, 1.0, 1.0, 1.0],
+        style: SurfaceStyle {
+            color_by: ColorBy::point("linear"),
+            colormap: ColormapKind::Viridis,
+            ..SurfaceStyle::default()
+        },
+        camera: Some(Camera::fit_bounds(bounds, 30.0, 20.0)),
+        ..HeadlessRenderOptions::default()
+    };
+
+    let ctx = shared_headless_context();
+    let reference = ctx
+        .render_surface(&surface, &options)
+        .expect("reference render");
+
+    let rendered: Vec<RenderedImage> = std::thread::scope(|scope| {
+        let handles: Vec<_> = (0..4)
+            .map(|_| {
+                let surface_ref = &surface;
+                let options_ref = &options;
+                scope.spawn(move || {
+                    shared_headless_context()
+                        .render_surface(surface_ref, options_ref)
+                        .expect("concurrent render on shared context")
+                })
+            })
+            .collect();
+        handles
+            .into_iter()
+            .map(|h| h.join().expect("render thread finished"))
+            .collect()
+    });
+
+    for (idx, image) in rendered.iter().enumerate() {
+        let cmp = reference
+            .compare(image, 0, 0.0)
+            .expect("compare concurrent render with reference");
+        assert_eq!(
+            cmp.differing_pixels, 0,
+            "concurrent render #{idx} differed from reference in {} pixels (max diff {})",
+            cmp.differing_pixels, cmp.max_channel_diff
+        );
+    }
 }

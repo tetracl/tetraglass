@@ -1,14 +1,25 @@
 //! Integration tests for `tetraglass-viewer` (`M1.8`): scene opening, hot reload on file change,
 //! time slider stepping, field and colormap pickers, and offscreen `egui_wgpu` rendering.
+//!
+//! Use `shared_headless_context()` rather than calling `HeadlessContext::new()` per test to
+//! avoid concurrent `libvulkan.so.1` loader races under parallel test execution (#5).
 
 use std::fs;
 use std::path::PathBuf;
+use std::sync::OnceLock;
 
 use egui_wgpu::wgpu;
 use tetraglass_egui::{ViewportColorBy, ViewportColormap, ViewportScalarComponent, ViewportState};
 use tetraglass_render::{HeadlessContext, OffscreenTarget};
 use tetraglass_scene::{ClipKeep, ClipMode, ColormapName};
 use tetraglass_viewer::{HotReloadOutcome, ViewerDocument, ViewerSession};
+
+/// Shares one `HeadlessContext` across parallel tests in this binary to avoid concurrent
+/// `vkEnumeratePhysicalDevices` vs. `vkSetDebugUtilsObjectNameEXT` races in `libvulkan` (#5).
+fn shared_headless_context() -> &'static HeadlessContext {
+    static CONTEXT: OnceLock<HeadlessContext> = OnceLock::new();
+    CONTEXT.get_or_init(|| HeadlessContext::new().expect("create shared headless wgpu context"))
+}
 
 fn workspace_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -339,7 +350,7 @@ fn viewer_session_renders_full_gui_and_viewport_offscreen() {
     .unwrap();
 
     let doc = ViewerDocument::load_path(&scene_path).expect("load viewer scene");
-    let headless = HeadlessContext::new().expect("headless wgpu context");
+    let headless = shared_headless_context();
     let mut egui_renderer = egui_wgpu::Renderer::new(
         headless.device(),
         wgpu::TextureFormat::Rgba8Unorm,
@@ -502,7 +513,7 @@ fn interactive_clip_uses_shader_plane_while_dragging_and_swaps_in_worker_result(
         .expect("active surface")
         .num_triangles();
 
-    let headless = HeadlessContext::new().expect("headless wgpu context");
+    let headless = shared_headless_context();
     let mut egui_renderer = egui_wgpu::Renderer::new(
         headless.device(),
         wgpu::TextureFormat::Rgba8Unorm,
@@ -773,7 +784,7 @@ fn viewer_session_supports_drag_and_drop_and_url_loading_for_meshes_series_and_s
     let demo_doc = ViewerDocument::default_demo().expect("default_demo");
     assert!(demo_doc.active_surface().unwrap().num_triangles() > 0);
 
-    let headless = HeadlessContext::new().expect("headless wgpu context");
+    let headless = shared_headless_context();
     let mut egui_renderer = egui_wgpu::Renderer::new(
         headless.device(),
         wgpu::TextureFormat::Rgba8Unorm,
@@ -1038,7 +1049,7 @@ fn viewer_session_builds_and_opens_self_contained_and_remote_shareable_links() {
     let step1_bytes = fs::read(root.join("testdata/vtk/series_1.vtu")).expect("read step1");
     let step2_bytes = fs::read(root.join("testdata/vtk/series_2.vtu")).expect("read step2");
 
-    let headless = HeadlessContext::new().expect("headless wgpu context");
+    let headless = shared_headless_context();
     let mut egui_renderer = egui_wgpu::Renderer::new(
         headless.device(),
         wgpu::TextureFormat::Rgba8Unorm,
