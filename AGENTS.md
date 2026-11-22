@@ -118,6 +118,18 @@ Domain skills: read the one that fits while implementing a task.
       Pull requests are squash-merged, so the title becomes the commit
       message on the main branch. Conventional Commits are no longer used.
 
+## Reviewers
+
+Task reviews and both gate passes use Claude Fable at high effort, each
+reviewer in a fresh read-only context. In T3 Code, start each brief as its
+own delegated task (`delegate_task`, provider `claudeAgent`, the newest
+Claude Fable model, `effort: high`, isolation `worktree`), one task per
+reviewer and round, with the brief, the commit, the base branch and the
+pull request description as a file. Where `delegate_task` is not
+available, start a fresh read-only subagent with the same model and
+effort. If Claude Fable cannot be started, use the strongest read-only
+reviewer available and say so in the review comment.
+
 ## Merging
 
 You merge a pull request only when the maintainer has told you, in this
