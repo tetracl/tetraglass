@@ -48,9 +48,10 @@ cargo run -p tetraglass-cli -- schema
   - [Linearization & Filters](docs/book/src/filters.md)
   - [Gallery](docs/book/src/gallery.md)
 - **Scene Format Specification:** [`docs/scene-format.md`](docs/scene-format.md)
-- **Architecture & Design Plan:** [`docs/design-plan.md`](docs/design-plan.md)
-- **Binding Decisions:** [`docs/decisions.md`](docs/decisions.md)
-- **Roadmap & Progress Log:** [`docs/roadmap.md`](docs/roadmap.md), [`docs/progress.md`](docs/progress.md)
+- **Design:** [`docs/design.md`](docs/design.md)
+- **Decisions:** [`docs/decisions.md`](docs/decisions.md) (D-001 to D-020) and ADRs in [`docs/adr/`](docs/adr/README.md)
+- **Roadmap:** [`docs/roadmap.md`](docs/roadmap.md); milestone tasks are GitHub issues. M0–M6 history is in [`docs/history/`](docs/history/README.md)
+- **Contributing with coding agents:** [`AGENTS.md`](AGENTS.md) and [`WORKFLOW.md`](WORKFLOW.md)
 - **API Docs:** run `cargo doc --workspace --no-deps --open`
 
 ## Development & Verification

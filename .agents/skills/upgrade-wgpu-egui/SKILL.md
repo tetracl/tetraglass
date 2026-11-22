@@ -21,8 +21,8 @@ cargo tree -i wgpu
 
 3. **Fix compile errors only where wgpu lives:** the render crate, plus texture bridging in the egui crate. If another crate breaks, the boundary was violated; fix the boundary, not just the error.
 4. **Check MSRV.** If the new egui raises its minimum Rust version, raise `rust-version` in `[workspace.package]` to match.
-5. **Verify.** Run `/verify`, then `/render-check` on the whole gallery. Look closely at sRGB handling, MSAA resolve and depth formats; these change quietly between wgpu versions.
+5. **Verify.** Run the `full` check from `AGENTS.md`, then `/render-check` on the whole gallery. Look closely at sRGB handling, MSAA resolve and depth formats; these change quietly between wgpu versions.
 6. **Web.** Build the viewer for wasm32 (once it exists) and open it in a WebGPU browser.
-7. **Record.** In `docs/progress.md`: old and new versions, breaking changes handled, and any baseline images that changed with the reason.
+7. **Record.** In the pull request description: old and new versions, breaking changes handled, and any baseline images that changed with the reason (a baseline change needs the maintainer's agreement first; see `/render-check`).
 
-Do the upgrade on its own branch and in its own commit (`chore(deps): upgrade egui to X and wgpu to Y`), never mixed with feature work.
+Do the upgrade as its own task, branch and pull request, never mixed with feature work.

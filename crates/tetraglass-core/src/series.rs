@@ -1,6 +1,6 @@
 //! Lazy time series of [`UnstructuredGrid`] steps with a bounded in-memory cache (`M1.7`).
 //!
-//! Per `docs/design-plan.md`, a [`TimeSeries`] holds a list of `(time, lazy_loader)` entries.
+//! Per `docs/design.md`, a [`TimeSeries`] holds a list of `(time, lazy_loader)` entries.
 //! Only the requested step and a small LRU cache stay resident in memory so transient datasets
 //! with many steps do not require parsing or retaining every step at once.
 

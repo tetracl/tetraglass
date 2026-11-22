@@ -6,7 +6,7 @@ description: "Keeps the platform-independent crates compiling for wasm32-unknown
 
 # Web compatibility rules
 
-These crates must build with `cargo check --target wasm32-unknown-unknown`. `/verify` checks this.
+These crates must build with `cargo check --target wasm32-unknown-unknown`. `cargo xtask verify` (the `full` check in `AGENTS.md`) checks this.
 
 - **No filesystem in core logic.** Readers take `&[u8]` or `Read + Seek`. Helpers that open paths live behind `#[cfg(not(target_arch = "wasm32"))]`.
 - **No threads by default.** No `std::thread::spawn`. `rayon` only behind the `parallel` feature, which is off on wasm32.

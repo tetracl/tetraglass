@@ -3,7 +3,7 @@
 //! `tetraglass-filters` operates purely on `tetraglass-core` types and compiles for
 //! `wasm32-unknown-unknown` with no GPU or filesystem dependencies (`D-008`).
 //!
-//! See `docs/design-plan.md` in the repository for how this crate fits the architecture.
+//! See `docs/design.md` in the repository for how this crate fits the architecture.
 //!
 //! # Examples
 //!

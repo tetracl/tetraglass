@@ -6,7 +6,7 @@ language = "en"
 src = "src"
 
 [output.html]
-git-repository-url = "https://github.com/Tetraglass/tetraglass"
-edit-url-template = "https://github.com/Tetraglass/tetraglass/edit/main/docs/book/{path}"
+git-repository-url = "https://github.com/tetracl/tetraglass"
+edit-url-template = "https://github.com/tetracl/tetraglass/edit/main/docs/book/{path}"
 default-theme = "navy"
 preferred-dark-theme = "navy"

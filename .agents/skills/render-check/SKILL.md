@@ -7,8 +7,8 @@ description: Visual regression and image inspection for anything that changes re
 
 ## 1. Render
 
-- **Before the CLI exists (M0):** run the render crate's image tests, `cargo test -p tetraglass-render`. They render test meshes through the headless helper and write PNGs to `target/render-tests/`.
-- **From M1 on:** render each gallery scene with `cargo run -p tetraglass-cli -- render gallery/<name>.json -o target/gallery/<name>.png`, or with the xtask gallery task once it exists.
+- The render crate's image tests, `cargo test -p tetraglass-render`, render test meshes through the headless helper and write PNGs to `target/render-tests/`.
+- Render each gallery scene with `cargo run -p tetraglass-cli -- render gallery/<name>.json -o target/gallery/<name>.png`; the CLI's gallery test (`cargo test -p tetraglass-cli --test cli`) does this for every scene and compares against the baselines.
 
 Fixed image size, fixed MSAA sample count and a fixed camera are part of every test scene. Without them, comparisons are meaningless.
 
@@ -31,7 +31,7 @@ Describe what you see in one or two sentences per image. Pixels passing the thre
 ## 4. Decide
 
 - **Unintended change:** fix the code, rerun from step 1.
-- **Intended change:** replace the baseline, and say in `docs/progress.md` and the commit message which images changed and why.
+- **Intended change:** `tests/baselines/` is a protected path. Stop and ask the maintainer before replacing a baseline. Once they agree, replace it and list in the pull request description and the commit message which images changed and why.
 - Baselines are authoritative only when produced on Mesa lavapipe, the driver CI uses. On a real GPU, compare locally, but leave baseline replacement to CI artifacts or a lavapipe run.
 
-Never replace a baseline just to make a failing test pass without that explanation.
+Never replace a baseline just to make a failing test pass.

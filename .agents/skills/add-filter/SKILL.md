@@ -7,11 +7,11 @@ description: Step-by-step procedure for adding or changing a visualization filte
 
 ## 1. Specify
 
-Write down, in the implementation plan:
+Check that the task's section in `docs/plans/<milestone>.md` and the design sections it cites state these; if one is missing, stop and ask (`AGENTS.md`, rule 4):
 
 - inputs (which dataset types), parameters with units and defaults, output type (surface, unstructured grid, polylines, instances or a 3D texture);
 - which point and cell arrays the output carries, and how they are interpolated;
-- the milestone and roadmap id.
+- the task id (`M<n>.T<k>`) and the design sections it implements.
 
 ## 2. Implement on the linearized view
 

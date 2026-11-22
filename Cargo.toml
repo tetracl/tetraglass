@@ -7,7 +7,7 @@ version = "0.3.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 # Public HTTPS URL derived from `git remote get-url origin` (bootstrap step 1).
-repository = "https://github.com/Tetraglass/tetraglass"
+repository = "https://github.com/tetracl/tetraglass"
 # Raise to the MSRV of the egui release chosen in bootstrap step 5.
 rust-version = "1.95"
 # Flip to true per crate (or here) when preparing release 0.1.

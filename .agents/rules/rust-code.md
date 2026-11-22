@@ -13,7 +13,7 @@ description: "Rust coding conventions for this workspace: errors, panics, docs, 
 - User files are untrusted input. Malformed data must return an error, never panic. Index math on file data uses checked conversions.
 - `unwrap()` and `expect()` appear only in tests, or with a comment proving the invariant that makes them safe.
 
-**Safety.** `unsafe_code` is forbidden workspace-wide. If a crate ever truly needs `unsafe`, stop and ask; the exception and a `// SAFETY:` comment must be justified in `docs/decisions.md`.
+**Safety.** `unsafe_code` is forbidden workspace-wide. If a crate ever truly needs `unsafe`, stop and ask; the exception and a `// SAFETY:` comment must be justified in an ADR (`docs/adr/`).
 
 **Docs.** Every public item has rustdoc. Public functions with non-obvious use get a short example. Crate-level docs say what the crate is for and what it must not depend on.
 
