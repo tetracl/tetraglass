@@ -1,6 +1,6 @@
 ---
 name: blender-bridge
-description: Implements and maintains the Blender integration for milestone M3. It covers the renderer-neutral bundle format, the export crate, the GPL importer and render scripts in blender/, and the CLI's render --engine cycles that drives a headless Blender. Use for any task about Blender, Cycles, ray-traced output, glTF or bundle export, .blend files, or the Blender add-on.
+description: Implements and maintains the Blender integration. It covers the renderer-neutral bundle format, the export crate, the GPL importer and render scripts in blender/, and the CLI's render --engine cycles that drives a headless Blender. Use for any task about Blender, Cycles, ray-traced output, glTF or bundle export, .blend files, or the Blender add-on.
 ---
 
 # Blender bridge
@@ -47,6 +47,6 @@ Turns an evaluated scene into the bundle, and separately into glTF (baked vertex
 - Rust side: bundle and glTF writers are covered by unit tests without Blender.
 - Blender side: an optional CI job installs a supported Blender, renders one gallery scene with few samples, and checks the image exists and is not blank. Run it for each version listed in `blender/README.md`.
 
-## Later (not M3)
+## Persistent worker and live link
 
-A persistent Blender worker with a socket server, and a live link from the viewer, reuse the same bundle format. Do not start them without a roadmap task.
+The persistent Blender worker (`blender/render.py --serve`, `BlenderWorkerClient` in the export crate) and the viewer's live camera link reuse the same bundle format. Changes to their request protocol follow the same data-only boundary.

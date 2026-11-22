@@ -9,7 +9,7 @@ description: Procedure for adding or changing a mesh file reader or writer in th
 
 - Read from `&[u8]` or `Read + Seek`, never from a path. A `from_path` helper may exist behind `#[cfg(not(target_arch = "wasm32"))]`.
 - Produce the core crate's types (`UnstructuredGrid`, arrays, time series). Format-specific structs stay private to the io crate.
-- If a third-party crate is used (vtkio or mshio, depending on the M0.3 decision), wrap it behind the project's own reader function so it can be replaced later.
+- Readers are written in-house (D-018). If a third-party parsing crate is ever used, wrap it behind the project's own reader function so it can be replaced later.
 
 ## 2. Cells
 
@@ -37,5 +37,5 @@ User files are untrusted. Truncated files, wrong counts, out-of-range indices an
 ## 6. Integrate
 
 - Register the format for detection by extension and, where the format allows, by magic bytes.
-- Make sure `inspect` (M1 onward) reports everything the reader exposes.
+- Make sure `inspect` reports everything the reader exposes.
 - Document supported versions, encodings and element types in the io crate's rustdoc.

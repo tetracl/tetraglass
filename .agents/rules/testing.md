@@ -18,10 +18,10 @@ description: "Testing strategy for this workspace. Apply when writing or changin
 
 **Image regression.**
 - Baselines live in `tests/baselines/` and are produced on Mesa lavapipe (software Vulkan), the same driver CI uses.
-- Comparison policy (`D-015`): a pixel differs if any channel differs by more than 2 (of 255); a test fails if more than 0.75% of pixels differ (`DEFAULT_MAX_DIFF_FRACTION = 0.0075`, accommodating cross-driver 1px `LineList` MSAA rasterization differences on wireframe/edge-overlay scenes). Adjust only with a decision entry.
-- Never replace a baseline to make a test pass without explaining why in `docs/progress.md` and the commit message.
+- Comparison policy (`D-015`): a pixel differs if any channel differs by more than 2 (of 255); a test fails if more than 0.75% of pixels differ (`DEFAULT_MAX_DIFF_FRACTION = 0.0075`, accommodating cross-driver 1px `LineList` MSAA rasterization differences on wireframe/edge-overlay scenes). Adjust only through an ADR (`docs/adr/`); the tolerance constants are a protected path.
+- `tests/baselines/` is a protected path (`AGENTS.md`). Never replace a baseline to make a test pass. For an intended visual change, stop and ask the maintainer first, then list the images that changed and why in the pull request description and the commit message.
 - Local runs on a real GPU may differ slightly; CI is authoritative.
 
 **Test data.** Small (under about 1 MB per file), reproducible and committed with the script that made it, under `testdata/` (`/make-test-data`). Larger datasets are downloaded by a script and never committed.
 
-**Performance.** Benchmarks use `criterion` in a `benches/` folder and a synthetic mesh generated in code. They are not part of `/verify`.
+**Performance.** Benchmarks use `criterion` in a `benches/` folder and a synthetic mesh generated in code. They are not part of the `quick` or `full` checks; the `milestone` check runs them.

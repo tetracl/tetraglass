@@ -18,7 +18,7 @@ testdata/
   reference/           filter outputs from VTK, used for comparison tests (M2)
 ```
 
-## Required set (version 1, roadmap task M0.2)
+## Required set (version 1)
 
 | File | Contents |
 | --- | --- |
@@ -50,5 +50,5 @@ testdata/
 - Keep each file under about 1 MB. Use a few cells, not thousands; performance tests generate their meshes in code.
 - Scripts are deterministic: no random numbers without a fixed seed.
 - Generate both ASCII and binary encodings where a reader supports both, for VTK at least for `tet_linear`.
-- After changing a script, regenerate everything it produces and rerun `/verify`.
-- Record new or changed files in `testdata/README.md` and in `docs/progress.md`.
+- After changing a script, regenerate everything it produces and run the `full` check from `AGENTS.md`.
+- Record new or changed files in `testdata/README.md`, and list them in the pull request description.

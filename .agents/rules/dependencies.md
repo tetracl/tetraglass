@@ -12,7 +12,7 @@ description: "Dependency and license policy: allowed licenses, workspace depende
 1. Check it is maintained, widely used and has a license on the list.
 2. Check it builds for wasm32 if the target crate must (see `web-compat.md`).
 3. Add the version once in the root `[workspace.dependencies]`; crates use `name.workspace = true`.
-4. Note in `docs/progress.md` why it was added.
+4. Say in the pull request description why it was added.
 
 Prefer few dependencies. Small utilities (a 30-line function) are written in-house.
 
