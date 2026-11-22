@@ -157,18 +157,12 @@ pub enum FilterError {
 #[inline]
 const fn sort3(mut a: u32, mut b: u32, mut c: u32) -> (u32, u64) {
     if a > b {
-        let t = a;
-        a = b;
-        b = t;
+        core::mem::swap(&mut a, &mut b);
     }
     if b > c {
-        let t = b;
-        b = c;
-        c = t;
+        core::mem::swap(&mut b, &mut c);
         if a > b {
-            let t2 = a;
-            a = b;
-            b = t2;
+            core::mem::swap(&mut a, &mut b);
         }
     }
     (a, ((b as u64) << 32) | (c as u64))
@@ -177,29 +171,19 @@ const fn sort3(mut a: u32, mut b: u32, mut c: u32) -> (u32, u64) {
 #[inline]
 const fn sort4(mut a: u32, mut b: u32, mut c: u32, mut d: u32) -> (u32, [u32; 3]) {
     if a > b {
-        let t = a;
-        a = b;
-        b = t;
+        core::mem::swap(&mut a, &mut b);
     }
     if c > d {
-        let t = c;
-        c = d;
-        d = t;
+        core::mem::swap(&mut c, &mut d);
     }
     if a > c {
-        let t = a;
-        a = c;
-        c = t;
+        core::mem::swap(&mut a, &mut c);
     }
     if b > d {
-        let t = b;
-        b = d;
-        d = t;
+        core::mem::swap(&mut b, &mut d);
     }
     if b > c {
-        let t = b;
-        b = c;
-        c = t;
+        core::mem::swap(&mut b, &mut c);
     }
     (a, [b, c, d])
 }
