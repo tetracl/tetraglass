@@ -1022,7 +1022,7 @@ impl<'a> OutputBuilder<'a> {
 impl Source {
     /// Creates a [`Source`] for `file` with default format inference and `linearize_level = 2`.
     ///
-    /// Alias for [`Source::new`] matching the builder examples in `docs/design-plan.md`.
+    /// Alias for [`Source::new`] matching the builder examples in `docs/design.md`.
     #[must_use]
     pub fn file(file: impl Into<String>) -> Self {
         Self::new(file)

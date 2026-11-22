@@ -1,6 +1,8 @@
 # Decisions
 
-Binding decisions for this project. Agents must not contradict an **Accepted** decision without the human's approval. **Proposed** decisions are defaults to confirm in the named task. Add new decisions at the end with the next number; never renumber.
+Binding decisions D-001 to D-020 for this project. Agents must not contradict an **Accepted** decision without the maintainer's approval.
+
+This register is frozen: new decisions, including any that change one of these, are ADRs in `adr/` (see `adr/README.md`). An ADR that supersedes a decision here names its ID.
 
 | ID | Date | Status | Decision | Why |
 | --- | --- | --- | --- | --- |

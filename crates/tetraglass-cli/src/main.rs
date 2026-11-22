@@ -1,6 +1,6 @@
 //! Command-line interface for Tetraglass: `inspect`, `render`, `validate`, and `schema` (`M1.4`).
 //!
-//! See `docs/design-plan.md` and `docs/scene-format.md` for command usage and JSON outputs.
+//! See `docs/design.md` and `docs/scene-format.md` for command usage and JSON outputs.
 
 use std::collections::{BTreeMap, VecDeque};
 use std::env;

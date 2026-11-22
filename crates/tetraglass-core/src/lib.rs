@@ -3,7 +3,7 @@
 //! `tetraglass-core` sits at the bottom of the dependency graph and must never depend on
 //! GPU crates (`wgpu`), GUI crates (`egui`), filesystem I/O, or native C libraries.
 //!
-//! See `docs/design-plan.md` in the repository for how this crate fits the architecture.
+//! See `docs/design.md` in the repository for how this crate fits the architecture.
 //!
 //! # Examples
 //!

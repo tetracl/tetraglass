@@ -27,7 +27,7 @@ use crate::ViewerError;
 /// Maximum decompressed payload size (`64 MiB`) allowed when decoding `?scene_b64=` or `?bundle_b64=`.
 pub const MAX_SHAREABLE_DECOMPRESSED_BYTES: usize = 64 * 1024 * 1024;
 
-/// Browsers with default WebGPU support cited in diagnostic messages (`docs/design-plan.md`).
+/// Browsers with default WebGPU support cited in diagnostic messages (`docs/design.md`).
 pub const SUPPORTED_WEBGPU_BROWSERS: [&str; 4] = [
     "Chrome or Microsoft Edge 113+ (Windows, macOS, ChromeOS)",
     "Safari 26+ (macOS, iOS / iPadOS)",

@@ -1,8 +1,8 @@
 # Tetraglass: Design Plan for a Rust-Native Scientific Visualization Library
 
-As of 2026-10-22. Exported from the planning document; binding decisions are summarized in `decisions.md`, tasks in `roadmap.md`.
+Binding decisions D-001 to D-020 are in `decisions.md`; later decisions are ADRs in `adr/`, and text they change is marked `(ADR-<NNNN>)`. Milestones are in `roadmap.md`. Section numbers never change and are never reused; new material takes the next free number.
 
-## Vision and goals
+## 1. Vision and goals
 
 Tetraglass is a Rust-native toolkit for visualizing FEM/CFD results on unstructured meshes. It is built on wgpu, embeds in Rust apps first, and can be driven by coding agents through a declarative scene file. VTK-class breadth is the long-term horizon; the first year targets a narrow, polished core.
 
@@ -28,7 +28,7 @@ Tetraglass is a Rust-native toolkit for visualizing FEM/CFD results on unstructu
 - A full Python API in the first release.
 - A built-in ray tracer before the rasterizer and export path are solid.
 
-## Decisions so far
+## 2. Decisions so far
 
 Every later section follows from these answers; changing one of them is the main way to change the plan.
 
@@ -47,7 +47,7 @@ Every later section follows from these answers; changing one of them is the main
 | Team | Solo, evenings and weekends | Ruthless scope; reuse crates; one milestone at a time |
 | Goal | Open-source community library | Stable public API, docs and tests matter from the start |
 
-## Architecture
+## 3. Architecture
 
 Dependencies run one way: frontends build a scene, the scene drives the data pipeline, and outputs consume its datasets. Nothing below the frontends knows about windows, egui or files on disk.
 
@@ -104,7 +104,7 @@ Crates are named `tetraglass-core`, `tetraglass-io` and so on; an umbrella crate
 
 **Build or reuse.** Reuse focused crates (glam, serde, schemars, egui, and vtkio and mshio if they pass the M0 tests). Build the filters, scene model and renderer in-house: they are the library's core and its reason to exist.
 
-## Data model
+## 4. Data model
 
 One type, `UnstructuredGrid`, carries every mesh. Higher-order cells and polyhedra are stored natively and never converted on load.
 
@@ -124,7 +124,7 @@ One type, `UnstructuredGrid`, carries every mesh. Higher-order cells and polyhed
 
 The payoff for a solo developer: every filter needs exactly one implementation, on tets. Per-cell-type fast paths can come later without changing the API. Element edges in wireframe mode are drawn from the original cells, so users see their real mesh, not the sub-cells.
 
-## Scene model and agent interface
+## 5. Scene model and agent interface
 
 The scene is plain data: Rust structs with serde, describing sources, filters, representations, camera and output. Every frontend produces the same scene, so the Rust API, JSON files, the viewer's save format, the web viewer and the Blender exporter all share one model.
 
@@ -181,7 +181,7 @@ scene.show(cut).color_by("velocity").magnitude().colormap(Colormap::Viridis);
 
 **Escape hatches and later frontends.** Logic that JSON cannot express (custom derived fields, loops over parameters) goes in plain Rust, using a pre-compiled template crate so only one small file recompiles. Python bindings through PyO3 become a thin layer later, because they only need to build scene data. A small MCP server wrapping `inspect` and `render` is another cheap later option.
 
-## Rendering
+## 6. Rendering
 
 The renderer takes the host's wgpu `Device` and `Queue` and draws into textures it is given. It never creates a window or runs an event loop, which is what makes embedding the first-class use case.
 
@@ -203,7 +203,7 @@ The renderer takes the host's wgpu `Device` and `Queue` and draws into textures 
 
 **Picking and annotations.** A GPU ID buffer returns representation and cell ids under the cursor, enabling value probes. Colorbars, axes triad and text labels are drawn by the renderer itself, not by egui, so headless PNGs contain them too.
 
-## Filters
+## 7. Filters
 
 One marching-tetrahedra kernel on the linearized view powers slice, clip and contour. That turns six requested filter families into four algorithms, which is the main scope saving in this plan.
 
@@ -224,7 +224,7 @@ One marching-tetrahedra kernel on the linearized view powers slice, clip and con
 
 **Correctness.** Each filter gets analytic test cases (a sphere's distance field must contour to a sphere) and comparisons against VTK reference outputs for a few datasets.
 
-## I/O and export
+## 8. I/O and export
 
 All readers take a byte slice or a `Read + Seek` source; path-based helpers exist only on native. This one rule makes the same readers work in the browser.
 
@@ -242,7 +242,7 @@ Gmsh and VTK number higher-order nodes differently, so the Gmsh reader carries p
 1. **glTF (.glb):** triangulated surfaces with baked vertex colors. The normalized scalar also goes into a second texture coordinate, so a Blender user can re-color through a color ramp node. Time series export as one .glb per step plus a small manifest.
 2. **Blender add-on and bundle:** a bundle holds a JSON manifest and raw binary buffers per time step. A pure-Python add-on with numpy rebuilds meshes with their attributes, the matching camera, lights, a colormap shader node and one frame per time step. No compiled dependencies, so it installs like any add-on, and the same import code runs headless for automated renders.
 
-## Viewer and web target
+## 9. Viewer and web target
 
 The viewer is a thin eframe app built from the same egui widget that users embed, so the viewer doubles as the widget's integration test. egui stays the GUI choice: it runs on desktop and in the browser from one codebase, and it is what the first host app uses.
 
@@ -257,7 +257,7 @@ The viewer is a thin eframe app built from the same egui widget that users embed
 - **Memory:** wasm32 has a 4 GiB address space, which caps mesh size in the browser; large data stays a native use case.
 - **Sharing:** a link to a scene file plus its data opens directly in the web viewer, which is a strong hook for community adoption.
 
-## Ray tracing path
+## 10. Ray tracing path
 
 Ray tracing arrives in three steps, each reusing what the previous one built. The scene model and GPU buffers stay the same throughout.
 
@@ -284,9 +284,11 @@ For an agent the loop stays the same: iterate with the fast rasterizer, then fli
 
 The bundle format from the Blender exporter is renderer-neutral, so other offline renderers can be added later with a small exporter each.
 
-## Roadmap
+## 11. Roadmap
 
-Release 0.1 lands after the core filters in M2, about nine months after a November 2026 start. Dates assume roughly 8 to 10 hours a week and will slip; the order is the part to keep. Detailed tasks are in `roadmap.md`.
+This is the original plan for milestones M0 to M5, kept for context; all of them are built. Milestones from M7 on are in `roadmap.md`, and the roadmap actually followed for M0 to M6 is in `history/roadmap-m0-m6.md`.
+
+Release 0.1 lands after the core filters in M2, about nine months after a November 2026 start. Dates assume roughly 8 to 10 hours a week and will slip; the order is the part to keep.
 
 | Milestone | Estimated dates | Scope | Gate |
 | --- | --- | --- | --- |
@@ -299,7 +301,7 @@ Release 0.1 lands after the core filters in M2, about nine months after a Novemb
 
 Each gate is a demo you can show, not a feature count. The agent loop comes before the filters on purpose: from M1 on, a coding agent can write test scenes and gallery entries for every later milestone.
 
-## Open-source setup
+## 12. Open-source setup
 
 Set up the community scaffolding in M0, while it is cheap; retrofitting tests and docs onto a grown codebase costs far more evenings.
 
@@ -311,7 +313,7 @@ Set up the community scaffolding in M0, while it is cheap; retrofitting tests an
 - **Versioning:** 0.x semver until the scene schema stabilizes; the schema carries its own version field and a migration path from day one.
 - **Contributors:** an architecture page, an "add a filter" walkthrough and labeled good-first issues. New filters and readers are the natural contribution units.
 
-## Risks and open questions
+## 13. Risks and open questions
 
 The biggest risk is scope against evenings-and-weekends time; every other risk is manageable with tests and pinning.
 
@@ -333,7 +335,7 @@ The biggest risk is scope against evenings-and-weekends time; every other risk i
 - [x] Which Blender versions to support, and do the GPL-licensed Blender scripts live in a separate folder or their own repository? Blender 4.2 LTS and 5.x LTS; `blender/` stays in this repository under GPL-3.0-or-later (D-020).
 - [ ] When to add Python bindings: on demand, after 0.2.
 
-## Sources
+## 14. Sources
 
 All pages opened on 2026-10-22.
 
@@ -344,3 +346,40 @@ All pages opened on 2026-10-22.
 - [WebGPU is now supported in major browsers (web.dev, Nov 2025)](https://web.dev/blog/webgpu-supported-major-browsers)
 - [Blender FAQ: add-ons, scripts and the GPL](https://www.blender.org/support/faq/)
 - [Blender background job template](https://projects.blender.org/archive/blender-archive/src/commit/24b47c00eaabe12b5262b59a185da154a477bd98/release/scripts/templates_py/background_job.py)
+
+## 15. Conventions
+
+These hold everywhere. The rule files in `.agents/rules/` explain each in detail.
+
+1. **Dependency direction:** `core` <- `io`, `filters` <- `scene` <- `render` <- `egui` <- `viewer`; `export` sits on `scene` and `filters`; `cli` and the umbrella crate `tetraglass` sit on top. `core` knows nothing about GPUs, files, egui or Blender.
+2. **The renderer never owns a window** (D-002). It takes the host's wgpu `Device` and `Queue` and draws into textures it is given. Only the `headless` helper may create its own device, for the CLI and tests.
+3. **All wgpu code lives in the render crate.** The egui crate only bridges textures and input.
+4. **Readers take bytes** (`&[u8]` or `Read + Seek`) (D-008). Path helpers exist only behind `cfg(not(target_arch = "wasm32"))`.
+5. **`core`, `io`, `filters`, `scene` and `export` compile for `wasm32-unknown-unknown`** with no C dependencies (D-008).
+6. **Filters work only on the linearized tetrahedral view** (D-005). Higher-order cells and polyhedra are stored natively but never special-cased inside a filter. Slice, clip and contour share one marching-tetrahedra kernel (D-006).
+7. **The scene model is plain serde data** (D-004). Any scene change updates the JSON Schema snapshot, `scene-format.md` and at least one gallery scene. Schema version 1 is frozen; a breaking change bumps `version` and ships a migration.
+8. **Licensing boundary** (D-011): Rust crates are `MIT OR Apache-2.0`. Anything that imports Blender's `bpy` lives in `blender/` under GPL-3.0-or-later. Rust code never embeds those scripts; the interface is data files and command-line arguments.
+9. **Web means WebGPU only** (D-007). No WebGL2 code paths.
+10. **Precision** (D-014): f64 positions and fields on the CPU; f32 relative to the dataset center on the GPU.
+11. **Indices** (D-013): connectivity and offsets are `u32`, converted with checks on load. VTK node ordering is canonical in core (D-009).
+12. **Errors:** each library crate has its own `thiserror` error enum. Malformed input returns an error and never panics.
+13. **Image tests** (D-015): baselines are rendered on Mesa lavapipe; a pixel differs if a channel differs by more than 2 of 255, and a test fails above 0.75% differing pixels.
+
+## 16. Protected paths
+
+The protected paths, what must not change in each, and the check that guards it are listed under "Protected paths" in `AGENTS.md`. Adding or removing a protected path, or changing what it guards, goes through an ADR.
+
+## 17. Glossary
+
+| Term | Meaning |
+| --- | --- |
+| `UnstructuredGrid` | The core mesh type: f64 points, VTK-style cell types, offsets and connectivity, polyhedron face streams, and named point and cell arrays (section 4). |
+| Linearized view, `TetView` | The linear-tetrahedron view of a grid built by `linearize`, with a map from every tet back to its source cell (section 4). |
+| Source cell | The cell of the original grid that an output tet, triangle or glyph came from; picking and cell data refer to it. |
+| `SurfaceMesh` | A triangulated surface with shared point arrays, per-triangle source cells and original-element wireframe edges. |
+| Scene | The JSON (or Rust) description of sources, filters, view and output (section 5, `scene-format.md`). |
+| Representation | One entry of `view.show`: how a dataset is drawn (style, coloring, opacity). |
+| Gallery scene | A scene in `gallery/` with a committed baseline image; each one is also a regression test. |
+| Baseline | A reference PNG in `tests/baselines/`, rendered on Mesa lavapipe. |
+| Bundle | The renderer-neutral export folder (`manifest.json` plus `.tgbin` meshes) read by the Blender scripts (`bundle-format.md`). |
+| lavapipe | Mesa's software Vulkan driver, used by CI so render tests need no GPU. |

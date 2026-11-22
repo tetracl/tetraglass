@@ -533,3 +533,7 @@ Newest entries at the bottom. `/next-task` appends one entry per finished task u
 - Follow-ups: All planned roadmap tasks across Milestones `M0`–`M6` are complete; awaiting human approval before running `cargo publish` and tagging `v0.3.0`.
 
 
+
+## 2026-11-22: Release 0.3.0 published; log frozen
+- Done: published all 10 workspace crates at `0.3.0` to crates.io from tag `v0.3.0` (`cargo publish --workspace --locked`), including the first release of the `tetraglass` umbrella crate.
+- Follow-ups: this log is frozen. From M7 on, task state lives in GitHub issues and pull requests (`AGENTS.md`, `WORKFLOW.md`).
