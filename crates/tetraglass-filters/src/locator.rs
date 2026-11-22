@@ -584,32 +584,36 @@ impl TetLocator {
         points: &[[f64; 3]],
         chunk_size: usize,
     ) -> Vec<Option<TetLocation>> {
-        let chunk_size = chunk_size.max(1);
         if points.is_empty() {
             return Vec::new();
         }
 
         #[cfg(not(target_arch = "wasm32"))]
-        if points.len() > chunk_size {
-            let mut results = vec![None; points.len()];
-            std::thread::scope(|s| {
-                let mut handles = Vec::new();
-                for (pt_chunk, out_chunk) in points
-                    .chunks(chunk_size)
-                    .zip(results.chunks_mut(chunk_size))
-                {
-                    handles.push(s.spawn(move || {
-                        for (pt, slot) in pt_chunk.iter().zip(out_chunk.iter_mut()) {
-                            *slot = self.locate(*pt);
-                        }
-                    }));
-                }
-                for handle in handles {
-                    let _ = handle.join();
-                }
-            });
-            return results;
+        {
+            let chunk_size = chunk_size.max(1);
+            if points.len() > chunk_size {
+                let mut results = vec![None; points.len()];
+                std::thread::scope(|s| {
+                    let mut handles = Vec::new();
+                    for (pt_chunk, out_chunk) in points
+                        .chunks(chunk_size)
+                        .zip(results.chunks_mut(chunk_size))
+                    {
+                        handles.push(s.spawn(move || {
+                            for (pt, slot) in pt_chunk.iter().zip(out_chunk.iter_mut()) {
+                                *slot = self.locate(*pt);
+                            }
+                        }));
+                    }
+                    for handle in handles {
+                        let _ = handle.join();
+                    }
+                });
+                return results;
+            }
         }
+        #[cfg(target_arch = "wasm32")]
+        let _ = chunk_size;
 
         points.iter().map(|&pt| self.locate(pt)).collect()
     }

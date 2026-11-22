@@ -28,9 +28,8 @@ use tetraglass_egui::{
 };
 use tetraglass_filters::{ClipParams, clip, extract_tet_view_surface};
 use tetraglass_io::{
-    IoError, MeshFormat, detect_format_from_bytes, detect_format_from_extension,
-    parse_pvtu_manifest, read_msh_series, read_pvd_series_with_loader,
-    read_pvtu_series_with_loader, read_vtk_series, read_vtu_series,
+    IoError, MeshFormat, detect_format_from_bytes, detect_format_from_extension, read_msh_series,
+    read_pvd_series_with_loader, read_pvtu_series_with_loader, read_vtk_series, read_vtu_series,
 };
 use tetraglass_render::{
     Annotations, ColorbarAnnotation, ColorbarPlacement, DEFAULT_COLORBAR_TICKS, PickProbeValue,
@@ -1622,6 +1621,7 @@ pub struct ViewerSession {
     blender_worker_addr: String,
     blender_live_link_enabled: bool,
     last_pushed_camera: Option<ViewportCamera>,
+    #[cfg(not(target_arch = "wasm32"))]
     last_worker_status: Option<String>,
 }
 
@@ -1708,6 +1708,7 @@ impl ViewerSession {
             blender_worker_addr: String::new(),
             blender_live_link_enabled: false,
             last_pushed_camera: None,
+            #[cfg(not(target_arch = "wasm32"))]
             last_worker_status: None,
         })
     }
@@ -1876,7 +1877,7 @@ impl ViewerSession {
                                 }
                             }
                         } else if source.file.to_ascii_lowercase().ends_with(".pvtu")
-                            && let Ok(manifest) = parse_pvtu_manifest(&bytes)
+                            && let Ok(manifest) = tetraglass_io::parse_pvtu_manifest(&bytes)
                         {
                             let pvtu_dir =
                                 source_path.parent().unwrap_or(self.doc.base_dir.as_path());

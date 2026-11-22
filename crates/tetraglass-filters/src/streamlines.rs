@@ -454,63 +454,66 @@ pub fn streamlines_with_chunk_size(
         return empty_polyline_set(view);
     }
 
-    let chunk_size = chunk_size.max(1);
     let per_seed_polylines: Vec<Option<(u32, Vec<IntegratedVertex>)>> = {
         #[cfg(not(target_arch = "wasm32"))]
-        if seed_points.len() > chunk_size {
-            let mut results = vec![None; seed_points.len()];
-            std::thread::scope(|s| {
-                let mut handles = Vec::new();
-                for (chunk_idx, (seed_chunk, out_chunk)) in seed_points
-                    .chunks(chunk_size)
-                    .zip(results.chunks_mut(chunk_size))
+        {
+            let chunk_size = chunk_size.max(1);
+            if seed_points.len() > chunk_size {
+                let mut results = vec![None; seed_points.len()];
+                std::thread::scope(|s| {
+                    let mut handles = Vec::new();
+                    for (chunk_idx, (seed_chunk, out_chunk)) in seed_points
+                        .chunks(chunk_size)
+                        .zip(results.chunks_mut(chunk_size))
+                        .enumerate()
+                    {
+                        let base_seed_id = chunk_idx * chunk_size;
+                        handles.push(s.spawn(move || {
+                            for (local_idx, (&seed_pt, slot)) in
+                                seed_chunk.iter().zip(out_chunk.iter_mut()).enumerate()
+                            {
+                                let seed_id = (base_seed_id + local_idx) as u32;
+                                *slot = trace_seed(
+                                    view,
+                                    locator,
+                                    vector_source,
+                                    &cfg,
+                                    params.direction,
+                                    params.integrator,
+                                    seed_id,
+                                    seed_pt,
+                                );
+                            }
+                        }));
+                    }
+                    for handle in handles {
+                        let _ = handle.join();
+                    }
+                });
+                results
+            } else {
+                seed_points
+                    .iter()
                     .enumerate()
-                {
-                    let base_seed_id = chunk_idx * chunk_size;
-                    handles.push(s.spawn(move || {
-                        for (local_idx, (&seed_pt, slot)) in
-                            seed_chunk.iter().zip(out_chunk.iter_mut()).enumerate()
-                        {
-                            let seed_id = (base_seed_id + local_idx) as u32;
-                            *slot = trace_seed(
-                                view,
-                                locator,
-                                vector_source,
-                                &cfg,
-                                params.direction,
-                                params.integrator,
-                                seed_id,
-                                seed_pt,
-                            );
-                        }
-                    }));
-                }
-                for handle in handles {
-                    let _ = handle.join();
-                }
-            });
-            results
-        } else {
-            seed_points
-                .iter()
-                .enumerate()
-                .map(|(idx, &seed_pt)| {
-                    trace_seed(
-                        view,
-                        locator,
-                        vector_source,
-                        &cfg,
-                        params.direction,
-                        params.integrator,
-                        idx as u32,
-                        seed_pt,
-                    )
-                })
-                .collect()
+                    .map(|(idx, &seed_pt)| {
+                        trace_seed(
+                            view,
+                            locator,
+                            vector_source,
+                            &cfg,
+                            params.direction,
+                            params.integrator,
+                            idx as u32,
+                            seed_pt,
+                        )
+                    })
+                    .collect()
+            }
         }
 
         #[cfg(target_arch = "wasm32")]
         {
+            let _ = chunk_size;
             seed_points
                 .iter()
                 .enumerate()
