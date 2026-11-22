@@ -133,40 +133,45 @@ pub fn resample_with_chunk_size(
         });
     }
 
-    let num_rows = ny * nz;
-    let row_chunk_size = chunk_size.max(1);
-    let points_per_row_chunk = row_chunk_size * nx;
-
     let mut locations: Vec<Option<TetLocation>> = vec![None; num_points];
 
     #[cfg(not(target_arch = "wasm32"))]
-    if num_rows > row_chunk_size && view.num_tets() > 0 {
-        std::thread::scope(|s| {
-            let mut handles = Vec::new();
-            for (chunk_idx, out_slice) in locations.chunks_mut(points_per_row_chunk).enumerate() {
-                let start_row = chunk_idx * row_chunk_size;
-                handles.push(s.spawn(move || {
-                    locate_row_range(
-                        view,
-                        locator,
-                        params.dimensions,
-                        bounds,
-                        start_row,
-                        out_slice,
-                    );
-                }));
-            }
-            for handle in handles {
-                let _ = handle.join();
-            }
-        });
-    } else if view.num_tets() > 0 {
-        locate_row_range(view, locator, params.dimensions, bounds, 0, &mut locations);
+    {
+        let num_rows = ny * nz;
+        let row_chunk_size = chunk_size.max(1);
+        if num_rows > row_chunk_size && view.num_tets() > 0 {
+            let points_per_row_chunk = row_chunk_size * nx;
+            std::thread::scope(|s| {
+                let mut handles = Vec::new();
+                for (chunk_idx, out_slice) in locations.chunks_mut(points_per_row_chunk).enumerate()
+                {
+                    let start_row = chunk_idx * row_chunk_size;
+                    handles.push(s.spawn(move || {
+                        locate_row_range(
+                            view,
+                            locator,
+                            params.dimensions,
+                            bounds,
+                            start_row,
+                            out_slice,
+                        );
+                    }));
+                }
+                for handle in handles {
+                    let _ = handle.join();
+                }
+            });
+        } else if view.num_tets() > 0 {
+            locate_row_range(view, locator, params.dimensions, bounds, 0, &mut locations);
+        }
     }
 
     #[cfg(target_arch = "wasm32")]
-    if view.num_tets() > 0 {
-        locate_row_range(view, locator, params.dimensions, bounds, 0, &mut locations);
+    {
+        let _ = chunk_size;
+        if view.num_tets() > 0 {
+            locate_row_range(view, locator, params.dimensions, bounds, 0, &mut locations);
+        }
     }
 
     let inside_mask: Vec<u8> = locations

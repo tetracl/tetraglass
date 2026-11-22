@@ -174,27 +174,31 @@ fn displace_points(
     }
 
     let num_points = points.len();
-    let eff_chunk = chunk_size.max(1);
     let mut out = vec![[0.0; 3]; num_points];
 
     #[cfg(not(target_arch = "wasm32"))]
-    if num_points > eff_chunk {
-        std::thread::scope(|s| {
-            let mut handles = Vec::new();
-            for (chunk_idx, out_slice) in out.chunks_mut(eff_chunk).enumerate() {
-                let start = chunk_idx * eff_chunk;
-                let end = start + out_slice.len();
-                let in_slice = &points[start..end];
-                handles.push(s.spawn(move || {
-                    displace_point_range(in_slice, vec_arr, start, scale_factor, out_slice);
-                }));
-            }
-            for h in handles {
-                let _ = h.join();
-            }
-        });
-        return Ok(out);
+    {
+        let eff_chunk = chunk_size.max(1);
+        if num_points > eff_chunk {
+            std::thread::scope(|s| {
+                let mut handles = Vec::new();
+                for (chunk_idx, out_slice) in out.chunks_mut(eff_chunk).enumerate() {
+                    let start = chunk_idx * eff_chunk;
+                    let end = start + out_slice.len();
+                    let in_slice = &points[start..end];
+                    handles.push(s.spawn(move || {
+                        displace_point_range(in_slice, vec_arr, start, scale_factor, out_slice);
+                    }));
+                }
+                for h in handles {
+                    let _ = h.join();
+                }
+            });
+            return Ok(out);
+        }
     }
+    #[cfg(target_arch = "wasm32")]
+    let _ = chunk_size;
 
     displace_point_range(points, vec_arr, 0, scale_factor, &mut out);
     Ok(out)

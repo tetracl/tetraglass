@@ -614,7 +614,10 @@ fn evaluate_on_table(
     let bound = bind_expr(&ast, attrs, params.association, &params.expression)?;
 
     let num_tuples = coords.len();
+    #[cfg(not(target_arch = "wasm32"))]
     let eff_chunk = chunk_size.max(1);
+    #[cfg(target_arch = "wasm32")]
+    let _ = chunk_size;
 
     match bound.kind() {
         ValueKind::Scalar => {
@@ -650,9 +653,9 @@ fn evaluate_on_table(
         }
         ValueKind::Vector3 => {
             let mut out = vec![0.0_f64; num_tuples * 3];
-            let elems_per_chunk = eff_chunk * 3;
             #[cfg(not(target_arch = "wasm32"))]
             if num_tuples > eff_chunk {
+                let elems_per_chunk = eff_chunk * 3;
                 std::thread::scope(|s| {
                     let bound_ref = &bound;
                     let mut handles = Vec::new();
