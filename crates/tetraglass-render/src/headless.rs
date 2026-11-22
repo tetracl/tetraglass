@@ -270,9 +270,10 @@ impl HeadlessContext {
     ///
     /// In multi-threaded processes (such as parallel test binaries), prefer sharing a single
     /// `HeadlessContext` across threads rather than creating separate contexts concurrently:
-    /// on Linux Vulkan (`libvulkan`), concurrent adapter enumeration (`vkEnumeratePhysicalDevices`)
-    /// and debug object naming (`vkSetDebugUtilsObjectNameEXT`) on another device can race inside
-    /// the Vulkan loader.
+    /// on Linux Vulkan (observed with `libvulkan1` 1.4.341 and Mesa `lavapipe` 26.0.8; see
+    /// issue #5), concurrent adapter enumeration (`vkEnumeratePhysicalDevices`) and debug
+    /// object naming (`vkSetDebugUtilsObjectNameEXT`) on another device can race inside
+    /// `libvulkan.so.1`.
     pub fn new() -> Result<Self, RenderError> {
         let instance =
             wgpu::Instance::new(wgpu::InstanceDescriptor::new_without_display_handle_from_env());

@@ -1,5 +1,8 @@
 //! Integration tests for `tetraglass-viewer` (`M1.8`): scene opening, hot reload on file change,
 //! time slider stepping, field and colormap pickers, and offscreen `egui_wgpu` rendering.
+//!
+//! Use `shared_headless_context()` rather than calling `HeadlessContext::new()` per test to
+//! avoid concurrent `libvulkan.so.1` loader races under parallel test execution (#5).
 
 use std::fs;
 use std::path::PathBuf;

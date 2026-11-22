@@ -1,4 +1,7 @@
 //! Integration tests for GPU ID buffer picking and CPU value probing (`M2.7`).
+//!
+//! Use [`common::shared_headless_context`] rather than calling `HeadlessContext::new()` per test
+//! to avoid concurrent `libvulkan.so.1` loader races under parallel test execution (#5).
 
 mod common;
 

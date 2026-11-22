@@ -1,5 +1,8 @@
 //! Integration tests for renderer-drawn annotations: colorbar with tick labels, title text,
 //! and 3D orientation axes triad (`M1.5`).
+//!
+//! Use [`common::shared_headless_context`] rather than calling `HeadlessContext::new()` per test
+//! to avoid concurrent `libvulkan.so.1` loader races under parallel test execution (#5).
 
 mod common;
 

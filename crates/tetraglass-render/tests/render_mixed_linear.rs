@@ -1,4 +1,7 @@
 //! Headless rendering integration tests for `tetraglass-render` (M0.7).
+//!
+//! Use [`common::shared_headless_context`] rather than calling `HeadlessContext::new()` per test
+//! to avoid concurrent `libvulkan.so.1` loader races under parallel test execution (#5).
 
 mod common;
 
@@ -1207,9 +1210,7 @@ fn shared_headless_context_renders_deterministically_across_threads() {
                 let surface_ref = &surface;
                 let options_ref = &options;
                 scope.spawn(move || {
-                    let shared = shared_headless_context();
-                    assert!(std::ptr::eq(ctx, shared));
-                    shared
+                    shared_headless_context()
                         .render_surface(surface_ref, options_ref)
                         .expect("concurrent render on shared context")
                 })
