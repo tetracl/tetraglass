@@ -680,12 +680,10 @@ fn build_bundle_from_evaluated_steps(
         })
         .collect();
 
-    let num_objects = first_eval.representations.len();
-    let mut objects = Vec::with_capacity(num_objects);
+    let mut objects = Vec::with_capacity(first_eval.representations.len());
     let mut mesh_files = BTreeMap::new();
 
-    for obj_slot in 0..num_objects {
-        let first_rep = &first_eval.representations[obj_slot];
+    for (obj_slot, first_rep) in first_eval.representations.iter().enumerate() {
         let obj_id = format!(
             "obj_{}_{}",
             first_rep.representation_index,
