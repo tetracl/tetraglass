@@ -24,3 +24,6 @@ __pycache__/
 *.pem
 *.key
 .cargo/credentials*
+
+# Reviewer worktrees started from Herdr (AGENTS.md, Reviewers)
+.claude/worktrees/
